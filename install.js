@@ -10,6 +10,7 @@ let requestProgress = require('request-progress'),
     url = require('url'),
     os = require('os'),
     fs = require('fs'),
+    repoBaseUrl = 'https://repo1.maven.org/maven2/org/flywaydb/flyway-commandline',
     flywayVersion = '4.0.3',
     slf4jVersion = '1.7.25',
     env = process.env;
@@ -17,17 +18,17 @@ let requestProgress = require('request-progress'),
 let completedSuccessfully = false,
     sources = {
         'win32': {
-            url: `https://repo1.maven.org/maven2/org/flywaydb/flyway-commandline/${flywayVersion}/flyway-commandline-${flywayVersion}-windows-x64.zip`,
+            url: `${repoBaseUrl}/${flywayVersion}/flyway-commandline-${flywayVersion}-windows-x64.zip`,
             filename: `flyway-commandline-${flywayVersion}-windows-x64.zip`,
             folder: `flyway-${flywayVersion}`
         },
         'linux': {
-            url: `https://repo1.maven.org/maven2/org/flywaydb/flyway-commandline/${flywayVersion}/flyway-commandline-${flywayVersion}-linux-x64.tar.gz`,
+            url: `${repoBaseUrl}/${flywayVersion}/flyway-commandline-${flywayVersion}-linux-x64.tar.gz`,
             filename: `flyway-commandline-${flywayVersion}-linux-x64.tar.gz`,
             folder: `flyway-${flywayVersion}`
         },
         'darwin': {
-            url: `https://repo1.maven.org/maven2/org/flywaydb/flyway-commandline/${flywayVersion}/flyway-commandline-${flywayVersion}-macosx-x64.tar.gz`,
+            url: `${repoBaseUrl}/${flywayVersion}/flyway-commandline-${flywayVersion}-macosx-x64.tar.gz`,
             filename: `flyway-commandline-${flywayVersion}-macosx-x64.tar.gz`,
             folder: `flyway-${flywayVersion}`
         }
@@ -59,20 +60,16 @@ function makeResolverFile(jlibDir) {
             flywayDir = path.join(jlibDir, currentSource.folder);
 
         if(fs.existsSync(flywayDir)) {
-            if(os.platform() === 'linux') {
-                argsPrefix = ['-Djava.security.egd=file:/dev/../dev/urandom'];
-            }
+//            if(os.platform() === 'linux') {
+//                argsPrefix = ['-Djava.security.egd=file:/dev/../dev/urandom'];
+//            }
 
             fileContents = `
 const path = require('path');
 
 module.exports = {
-    bin: path.join(__dirname, 'flyway-${flywayVersion}/jre/bin/java'),
+    bin: path.join(flywayDir, 'flyway'),
     argsPrefix: ${JSON.stringify(argsPrefix)},
-    libDirs: [
-        path.join(__dirname, 'flyway-${flywayVersion}/lib/*'),
-        path.join(__dirname, 'flyway-${flywayVersion}/drivers/*')
-    ]
 };
 `;
 
